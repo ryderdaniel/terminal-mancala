@@ -1,4 +1,4 @@
-//  Version 1.0
+//  Version 2.0
 //  Terminal Tancala
 //  Author: Ryder Daniel <ryderdaniel83@gmail.com>
 //  Date: 12/7/2020
@@ -65,7 +65,7 @@ void init_pot_selected(WIN *p_win){
     p_win->border.br = '@';
 }
 
-void create_box(WIN *p_win, int amt, bool flag){
+void create_box(WIN *p_win, int amt, bool flag, int player){
     int i, j;
 	int x, y, w, h;
 
@@ -74,6 +74,13 @@ void create_box(WIN *p_win, int amt, bool flag){
 	w = p_win->width;
 	h = p_win->height;
 
+    init_pair(1, COLOR_BLUE , COLOR_BLACK);
+    init_pair(2, COLOR_RED  , COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW , COLOR_BLACK);
+    // 1 - player 1 = blue      2 - player 2 = red      3 - inspected = yellow
+    if(player == 2) attron(COLOR_PAIR(2));
+    else if(player == 1) attron(COLOR_PAIR(1));
+    else attron(COLOR_PAIR(3));
     mvaddch(y, x, p_win->border.tl);
 	mvaddch(y, x + w, p_win->border.tr);
 	mvaddch(y + h, x, p_win->border.bl);
@@ -84,8 +91,13 @@ void create_box(WIN *p_win, int amt, bool flag){
 	mvvline(y + 1, x + w, p_win->border.rs, h - 1);
     if(amt < 10) mvprintw(y+1, x+1, "0%d", amt);
     else mvprintw(y+1, x+1, "%d",amt);
+    if(player == 2 ) attroff(COLOR_PAIR(2));
+    else if(player == 1) attroff(COLOR_PAIR(1));
+    else attroff(COLOR_PAIR(3));
+    attron(COLOR_PAIR(3));
     if(flag) mvprintw(y+3, x+1, "VV");
     else mvprintw(y+3, x+1, "  ");
+    attroff(COLOR_PAIR(3));
 }
 
 void draw(vector<int> st, bool tn, int ins){
@@ -110,7 +122,11 @@ void draw(vector<int> st, bool tn, int ins){
     if(ins >= 0) init_pot_selected(&boxes[ins]);
     int state_copy = st[ins];
     for(int i = 0; i < 14; ++i){
-        create_box(&boxes[i], st[i], ((tn && i != 6) || (!tn && i != 13))&&((st[ins] >= 14) || ((i <= ins + st[ins]) && (i > ins)) || ((i <= (ins + st[ins])%14) && (ins + st[ins] >= 14))));
+        int c;
+        if(i == ins) c = 3;
+        else if(i < 7) c = 1;
+        else c = 2;
+        create_box(&boxes[i], st[i], ((tn && i != 6) || (!tn && i != 13))&&((st[ins] >= 14) || ((i <= ins + st[ins]) && (i > ins)) || ((i <= (ins + st[ins])%14) && (ins + st[ins] >= 14))), c);
     }
     mvprintw(cen_y - 7, cen_x - 30, "Player %d's turn", (tn + 1));
 }
@@ -128,7 +144,7 @@ int logic(vector<int>& st, int ins, bool& tn){
             }
             ++st[(ins + p++)%14];
             if(i == in_hand-1 && (ins + p -1 )%14 == 13) tn = !tn;
-            if(i == in_hand-1 && st[(ins + p-1)%14] == 1 && (ins+p-1)%14 <=12 && (ins+p-1)%14 >=7 ){
+            if(i == in_hand-1 && st[(ins + p-1)%14] == 1 && (ins+p-1)%14 <=12 && (ins+p-1)%14 >=7 && st[12-(ins+p-1)%14] > 0){
                 st[13] += 1 + st[12-(ins+p-1)%14];
                 st[(ins+p-1)%14] = 0; st[12-(ins+p-1)%14] = 0;
             }
@@ -142,7 +158,7 @@ int logic(vector<int>& st, int ins, bool& tn){
             }
             ++st[(ins+p++)%14];
             if(i == in_hand-1 && (ins+p-1)%14 == 6) tn = !tn;
-            if(i == in_hand-1 && st[(ins+p-1)%14] == 1 && (ins+p-1)%14 <=5 && (ins+p-1)%14 >= 0){
+            if(i == in_hand-1 && st[(ins+p-1)%14] == 1 && (ins+p-1)%14 <=5 && (ins+p-1)%14 >= 0 && st[12-(ins+p-1)%14] > 0){
                 st[6] += 1 + st[12-(ins+p-1)%14];
                 st[(ins+p-1)%14]=0; st[12-(ins+p-1)%14]=0;
             }
@@ -189,6 +205,7 @@ int main(){
     cbreak();
     keypad(stdscr, TRUE);
     noecho();
+    start_color();
 
     init_pair(1,COLOR_CYAN, COLOR_BLACK);
     attron(COLOR_PAIR(1));
@@ -217,6 +234,7 @@ int main(){
                 break;
             case ' ':
                 int res;
+                if(state[inspect] == 0) continue;
                 if((res = logic(state, inspect, turn)) != 3){
                     cont = false;
                     draw(state, turn, -1);
