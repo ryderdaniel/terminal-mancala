@@ -1,5 +1,5 @@
-//  Version 2.0
-//  Terminal Tancala
+//  Version 3.0
+//  Terminal Mancala
 //  Author: Ryder Daniel <ryderdaniel83@gmail.com>
 //  Date: 12/7/2020
 
