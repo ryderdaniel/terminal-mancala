@@ -28,14 +28,14 @@ void init_mancala(WIN *p_win, int sx, int sy){
     p_win->startx = sx;
     p_win->starty = sy;
 
-    p_win->border.ls = '|';
-	p_win->border.rs = '|';
-	p_win->border.ts = '-';
-	p_win->border.bs = '-';
-	p_win->border.tl = '+';
-	p_win->border.tr = '+';
-	p_win->border.bl = '+';
-	p_win->border.br = '+';
+    p_win->border.ls = ACS_VLINE;
+	p_win->border.rs = ACS_VLINE;
+	p_win->border.ts = ACS_HLINE;
+	p_win->border.bs = ACS_HLINE;
+	p_win->border.tl = ACS_ULCORNER;
+	p_win->border.tr = ACS_URCORNER;
+	p_win->border.bl = ACS_LLCORNER;
+	p_win->border.br = ACS_LRCORNER;
 }
 
 void init_pot(WIN *p_win, int sx, int sy){
@@ -44,25 +44,27 @@ void init_pot(WIN *p_win, int sx, int sy){
     p_win->startx = sx;
     p_win->starty = sy;
 
-    p_win->border.ls = '|';
-	p_win->border.rs = '|';
-	p_win->border.ts = '-';
-	p_win->border.bs = '-';
-	p_win->border.tl = '+';
-	p_win->border.tr = '+';
-	p_win->border.bl = '+';
-	p_win->border.br = '+';
+    p_win->border.ls = ACS_VLINE;
+	p_win->border.rs = ACS_VLINE;
+	p_win->border.ts = ACS_HLINE;
+	p_win->border.bs = ACS_HLINE;
+	p_win->border.tl = ACS_ULCORNER;
+	p_win->border.tr = ACS_URCORNER;
+	p_win->border.bl = ACS_LLCORNER;
+	p_win->border.br = ACS_LRCORNER;
 }
 
 void init_pot_selected(WIN *p_win){
-    p_win->border.ls = '\\';
-    p_win->border.rs = '\\';
-    p_win->border.ts = '=';
-    p_win->border.bs = '=';
-    p_win->border.tl = '@';
-    p_win->border.tr = '@';
-    p_win->border.bl = '@';
-    p_win->border.br = '@';
+
+    p_win->border.ls = ACS_VLINE;
+	p_win->border.rs = ACS_VLINE;
+	p_win->border.ts = ACS_HLINE;
+	p_win->border.bs = ACS_HLINE;
+	p_win->border.tl = ACS_ULCORNER;
+	p_win->border.tr = ACS_URCORNER;
+	p_win->border.bl = ACS_LLCORNER;
+	p_win->border.br = ACS_LRCORNER;
+   
 }
 
 void create_box(WIN *p_win, int amt, bool flag, int player){
@@ -89,13 +91,13 @@ void create_box(WIN *p_win, int amt, bool flag, int player){
 	mvhline(y + h, x + 1, p_win->border.bs, w - 1);
 	mvvline(y + 1, x, p_win->border.ls, h - 1);
 	mvvline(y + 1, x + w, p_win->border.rs, h - 1);
-    if(amt < 10) mvprintw(y+1, x+1, "0%d", amt);
-    else mvprintw(y+1, x+1, "%d",amt);
     if(player == 2 ) attroff(COLOR_PAIR(2));
     else if(player == 1) attroff(COLOR_PAIR(1));
     else attroff(COLOR_PAIR(3));
+    if(amt < 10) mvprintw(y+1, x+1, " %d", amt);
+    else mvprintw(y+1, x+1, "%d",amt);
     attron(COLOR_PAIR(3));
-    if(flag) mvprintw(y+3, x+1, "VV");
+    if(flag) mvaddch(y+3, x+2, ACS_DIAMOND);
     else mvprintw(y+3, x+1, "  ");
     attroff(COLOR_PAIR(3));
 }
@@ -126,7 +128,11 @@ void draw(vector<int> st, bool tn, int ins){
         if(i == ins) c = 3;
         else if(i < 7) c = 1;
         else c = 2;
-        create_box(&boxes[i], st[i], ((tn && i != 6) || (!tn && i != 13))&&((st[ins] >= 14) || ((i <= ins + st[ins]) && (i > ins)) || ((i <= (ins + st[ins])%14) && (ins + st[ins] >= 14))), c);
+        bool exp = (((tn && i != 6)||(!tn && i !=13))&&(st[ins] >=13)) 
+                || ((!tn)&&(i != 13)&&((i>ins && i <= ins + st[ins] || (i <=(ins+st[ins])%13 && (ins + st[ins] > 12)))))
+                ||  ((tn)&&(i != 6)&&((i > ins && i <= ins + st[ins]) || ((i <=(ins+st[ins])%14 && (ins+st[ins])%14 < 6)&&(ins+st[ins]>13)) || ((i<=(ins+st[ins])%13 && (ins+st[ins])%14 >= 6) && (ins+st[ins]>13))));
+
+        create_box(&boxes[i], st[i], exp, c);
     }
     mvprintw(cen_y - 7, cen_x - 30, "Player %d's turn", (tn + 1));
 }
@@ -207,6 +213,8 @@ int main(){
     noecho();
     start_color();
 
+    curs_set(0);
+
     init_pair(1,COLOR_CYAN, COLOR_BLACK);
     attron(COLOR_PAIR(1));
     printw("Press F1 to quit.");
@@ -218,6 +226,7 @@ int main(){
     int ch;
     int def_p1 = 0, def_p2 = 7;
     bool cont = true;
+    bool old_turn = false;
     while(cont && ((ch = getch()) != KEY_F(1))){
         switch(ch){
             case KEY_LEFT:
@@ -242,8 +251,14 @@ int main(){
                     mvprintw(LINES/2, (COLS-39)/2, "Player %d Wins!!! Score: <~%d : %d~>", res+1, state[13], state[6]);
                     getch();
                 }
-                inspect = (turn)?def_p1:def_p2;
+                if(turn == old_turn)
+                    inspect = (turn)?def_p1:def_p2;
                 turn = !turn;
+                old_turn = turn;
+                break;
+            case 'f':
+                clear();
+                draw(state,turn,inspect);
                 break;
             default:
                 break;
