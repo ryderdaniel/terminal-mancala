@@ -260,6 +260,12 @@ int main(){
                 clear();
                 draw(state,turn,inspect);
                 break;
+            //case 'w':
+            //    ++state[inspect];
+            //    break;
+            //case 's':
+            //    --state[inspect];
+            //    break;
             default:
                 break;
         }
