@@ -246,7 +246,7 @@ int main(int argc, char * argv[]){
 	} else {
 		// Single Player vs AI
 
-		int human_turn = stoi(argv[1]);
+		int human_turn = stoi(argv[1])-1;
 		int search_depth = stoi(argv[2]);
 		int ch;
 		int human_side = (human_turn)?7:0;
