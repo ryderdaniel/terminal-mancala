@@ -1,0 +1,3 @@
+#/bin/bash
+
+g++ -Ofast -frename-registers main.cpp -lncurses -o mancala 
