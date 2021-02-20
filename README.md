@@ -17,3 +17,8 @@ You use the left and right arrow keys to change the selected pot, and spacebar t
 * [Rules of mancala](https://www.thesprucecrafts.com/how-to-play-mancala-409424#:~:text=Place%20four%20stones%20into%20each%20of%20the%20pits.&text=2.,a%20stone%20in%20there%2C%20too.)
 * [Minmax](https://en.wikipedia.org/wiki/Minimax)
 
+---
+
+### Notes:
+
+* This program is designed to be run on linux.
