@@ -13,7 +13,8 @@ private:
 
 	int sumSide(int side){
 		int s = 0;
-		for(int i = 0; i < 6; ++i) s += b(side, i);
+		int i;
+		for(i = 6; i--;) s += b(side, i);
 		return s;
 	}
 
@@ -23,7 +24,8 @@ private:
 
 public:
 	Mancala_game(){
-		for(int i = 0; i < 12; ++i) board[i] = 4;
+		int i;
+		for(i = 12; i--;) board[i] = 4;
 		this->mancala[0] = 0;
 		this->mancala[1] = 0;
 		this->turn = 0;

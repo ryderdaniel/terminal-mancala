@@ -249,7 +249,8 @@ int main(int argc, char * argv[]){
 		int human_turn = stoi(argv[1])-1;
 		int search_depth = stoi(argv[2]);
 		int ch;
-		int human_side = (human_turn)?7:0;
+		int human_side = 7*human_turn;
+		if(human_side) inspect = -1;
 
 		draw(game,inspect);
 		while(!game.isOver() && ((game.getTurn() != human_turn) || (ch = getch()) != KEY_F(1))){
@@ -257,13 +258,13 @@ int main(int argc, char * argv[]){
 				// Robot is playing
 				mvprintw(LINES/2,(COLS-15)/2, " Thinking... ");
 				refresh();
-				pair<int,int> robot = minmax(game, search_depth,(human_turn)?1:-1);
-				mvprintw(LINES/2, (COLS-13)/2, "I chose pot %d", robot.second+1);
-				inspect = robot.second + 7*(!human_turn);
+				int robot = minmax_move(game, search_depth,(human_turn)?1:-1);
+				mvprintw(LINES/2, (COLS-13)/2, "I chose pot %d", robot+1);
+				inspect = robot + 7*(!human_turn);
 				draw(game,inspect);
 				refresh();
 				sleep(1);
-				game.move(robot.second);
+				game.move(robot);
 				inspect = human_side;
 				mvprintw(LINES/2,(COLS-15)/2, "                    ");
 			} else {
