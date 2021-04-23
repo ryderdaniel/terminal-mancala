@@ -34,9 +34,8 @@ public:
 
 	Mancala_game(const Mancala_game &target){
 		int i;
-		for(i = 12; i--;) board[i] = target.board[i];
-		this->mancala[0] = target.mancala[0];
-		this->mancala[1] = target.mancala[1];
+		memcpy(board, target.board, 12);
+		memcpy(mancala, target.mancala, 2);
 		this->turn = target.turn;
 		this->gameOver = target.gameOver;
 	}
